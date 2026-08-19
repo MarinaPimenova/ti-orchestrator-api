@@ -21,6 +21,9 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.amqp:spring-rabbit-stream'
+
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
@@ -45,9 +48,6 @@ dependencies {
     runtimeOnly 'io.opentelemetry:opentelemetry-exporter-zipkin'
     // Context Propagation for Web Clients / Feign / RestTemplate
     implementation 'io.micrometer:micrometer-observation'
-
-    implementation 'org.springframework.boot:spring-boot-starter-amqp'
-    implementation 'org.springframework.amqp:spring-rabbit-stream'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
