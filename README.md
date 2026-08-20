@@ -88,3 +88,146 @@ Local configuration:
 ```text
 src/main/resources/application-local.yaml
 ```
+
+---
+
+## Asynchronous Communication
+
+RabbitMQ is used for long-running operations.
+
+Examples
+
+- Import
+- Export
+- Notifications
+- Audit Logging
+
+```
+orchestrator Service
+
+↓
+
+RabbitMQ
+
+↓
+
+Import Service
+
+↓
+
+Knowledge Service
+
+↓
+
+ImportCompletedEvent
+
+↓
+
+Notification Service
+```
+
+---
+
+# Event Flow
+
+## Import
+
+```text
+User uploads file
+
+        │
+
+        ▼
+
+Gateway
+
+        │
+
+        ▼
+
+orchestrator Service
+
+        │
+
+ImportRequestedEvent
+
+        │
+
+        ▼
+
+RabbitMQ
+
+        │
+
+        ▼
+
+Import Service
+
+        │
+
+Validate and Import
+
+        │
+
+        ▼
+
+Knowledge Database
+
+        │
+
+ImportCompletedEvent
+
+        │
+
+        ▼
+
+Orchestrator Service - to notify UI via SSE
+
+Audit Service
+```
+
+---
+
+## Export
+
+```text
+User requests export
+
+        │
+
+        ▼
+
+Gateway
+
+        │
+
+        ▼
+
+orchestrator Service
+
+        │
+
+ExportRequestedEvent
+
+        ▼
+
+RabbitMQ
+
+        ▼
+
+Export Service
+
+        │
+
+Generate File
+
+        │
+
+ExportCompletedEvent
+
+        ▼
+
+Orchestrator Service - to notify UI via SSE
+```
+
+---

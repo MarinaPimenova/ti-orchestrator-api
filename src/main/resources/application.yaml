@@ -19,13 +19,21 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://${OKTA_DOMAIN}/
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASS:guest}
 
+file:
+  upload:
+    directory: ./storage/import
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,zipkin
   endpoint:
     prometheus:
       access: read_only

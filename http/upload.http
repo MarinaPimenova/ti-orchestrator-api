@@ -1,0 +1,13 @@
+### Send a form with the text and file fields
+POST http://localhost:8082/api/v1/import
+Authorization: Bearer XXX
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="questions.csv"
+Content-Type: application/vnd.ms-excel
+
+< import/questions.csv
+--WebAppBoundary--
+
+###
