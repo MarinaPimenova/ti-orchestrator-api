@@ -54,137 +54,146 @@ The generated JAR is available in:
 ```text
 build/libs/
 ```
+---
 
-## Run Locally
 
-Start the application with:
+## 💡 Architecture Overview
 
-```bash
-./gradlew bootRun
+The system decouples file upload from heavy batch parsing and database insertion using RabbitMQ queues and Server-Sent Events (SSE) to deliver real-time progress updates back to the UI.
+```
+UI Client ──(1. POST CSV/XLSX)──> Orchestrator (ti-orchestrator-api)
+│                                   │
+│                                   ├──(2. Stores file on Disk)
+├──(3. GET SSE Stream)──────────────┤
+│                                   └──(4. Publishes ImportRequestedEvent)
+│                                                   │
+│                                                   ▼
+│                                        RabbitMQ [import-worker.import]
+│                                                   │
+│                                                   ▼
+│                                         Worker (ti-import-worker)
+│                                                   │
+│                                                   ├──(Parses & Bulk Save to PostgreSQL)
+│                                                   │
+│                                                   ├──(Success)──> RabbitMQ [import-worker.completed]
+│                                                   └──(Failure)──> RabbitMQ [import-worker.fail]
+│                                                                           │
+└──────────────(5. SSE Result Event & Close Stream) <───────────────────────┘
+```
+---
+
+## 🔄 Messaging & Queue Topology
+
+Separate queues are used for requests, completions, and failures. This prevents workers from consuming their own processing completion events and makes queue metrics and monitoring simpler.
+
+| Queue | Exchange | Routing Key | Producer | Consumer |
+| :--- | :--- | :--- | :--- | :--- |
+| `import-worker.import` | `ti.import` | `import.requested` | Orchestrator | Import Worker |
+| `import-worker.completed` | `ti.import` | `import.completed` | Import Worker | Orchestrator |
+| `import-worker.fail` | `ti.import` | `import.failed` | Import Worker | Orchestrator |
+
+> **Note:** The applications do not declare or generate queues dynamically at runtime. Queues, exchanges, and bindings are pre-created via RabbitMQ startup definitions (`definitions.json`).
+
+---
+#### Metrics Summary
+
+| Metric Name | Type | Description |
+| --- | --- | --- |
+| `ti.import.started` | Counter | Total imports initiated |
+| `ti.import.completed` | Counter | Total successfully processed imports |
+| `ti.import.failed` | Counter | Total failed imports |
+| `ti.import.duration` | Timer | Processing duration histogram |
+
+#### Useful PromQL Queries
+
+* **Success Rate (5m):**
+```promql
+sum(rate(ti_import_completed_total[5m]))
+
 ```
 
-The default port is:
+* **Failure Rate (5m):**
+```promql
+sum(rate(ti_import_failed_total[5m]))
 
-```text
-8082
 ```
 
-Application URL:
-
-```text
-http://localhost:8082
-```
-
-## Configuration
-
-Main configuration:
-
-```text
-src/main/resources/application.yaml
-```
-
-Local configuration:
-
-```text
-src/main/resources/application-local.yaml
+* **95th Percentile Import Latency:**
+```promql
+histogram_quantile(
+  0.95,
+  rate(ti_import_duration_seconds_bucket[5m])
+)
 ```
 
 ---
 
-## Asynchronous Communication
+### 🔍 9. Distributed Tracing & Logging
 
-RabbitMQ is used for long-running operations.
+Spring Boot 4 automatically propagates trace context through RabbitMQ message headers when Micrometer Tracing is enabled.
 
-Examples
 
-- Import
-- Export
-- Notifications
-- Audit Logging
+### 🐳 10. RabbitMQ Topology & Docker Compose
+
+#### `docker-compose.yml`
+
+```yaml
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
 
 ```
-orchestrator Service
 
-↓
+#### `rabbitmq.conf`
 
-RabbitMQ
-
-↓
-
-Import Service
-
-↓
-
-Knowledge Service
-
-↓
-
-ImportCompletedEvent
-
-↓
-
-Notification Service
+```ini
+management.load_definitions = /etc/rabbitmq/definitions.json
 ```
 
 ---
 
-# Event Flow
-
-## Import
+### ❌ 11. Failure Handling & Resilience
 
 ```text
-User uploads file
-
-        │
-
-        ▼
-
-Gateway
-
-        │
-
-        ▼
-
-orchestrator Service
-
-        │
-
-ImportRequestedEvent
-
-        │
-
-        ▼
-
-RabbitMQ
-
-        │
-
-        ▼
-
-Import Service
-
-        │
-
-Validate and Import
-
-        │
-
-        ▼
-
-Knowledge Database
-
-        │
-
-ImportCompletedEvent
-
-        │
-
-        ▼
-
-Orchestrator Service - to notify UI via SSE
-
-Audit Service
+CSV File (e.g. Invalid Format)
+  │
+  ▼
+ti-import-worker
+  │
+  ├──> IllegalArgumentException
+  │
+  ├──> log.error("...")
+  ├──> ti.import.failed Counter ++
+  │
+  └──> Publishes ImportFailedEvent
+            │
+            ▼
+       RabbitMQ [import-worker.fail]
+            │
+            ▼
+       ti-orchestrator-api
+            │
+            ▼
+       SSE push message: { "importId": "...", "reason": "Invalid CSV header" }
+            │
+            ▼
+       UI displays error notification & closes SSE connection
 ```
-
 ---
+
+### 📌 Summary Features
+
+* **Immediate Responsiveness**: HTTP request responds immediately with an `importId`.
+* **Real-Time Delivery**: Clean push delivery via Server-Sent Events (SSE).
+* **Decoupled Workflows**: Asynchronous worker isolation using RabbitMQ topic exchange topology.
+* **End-to-End Correlation**: Unified tracing using `importId` and `traceId`.
+* **Pre-defined Infrastructure**: Declarative topology via RabbitMQ Docker startup definitions.
 

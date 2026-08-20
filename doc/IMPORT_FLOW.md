@@ -7,7 +7,7 @@ An asynchronous, event-driven microservice system designed to upload, validate, 
 ## 💡 Architecture Overview
 
 The system decouples file upload from heavy batch parsing and database insertion using RabbitMQ queues and Server-Sent Events (SSE) to deliver real-time progress updates back to the UI.
-
+```
 UI Client ──(1. POST CSV/XLSX)──> Orchestrator (ti-orchestrator-api)
 │                                   │
 │                                   ├──(2. Stores file on Disk)
@@ -26,7 +26,7 @@ UI Client ──(1. POST CSV/XLSX)──> Orchestrator (ti-orchestrator-api)
 │                                                   └──(Failure)──> RabbitMQ [import-worker.fail]
 │                                                                           │
 └──────────────(5. SSE Result Event & Close Stream) <───────────────────────┘
-
+```
 ---
 
 ## 🔄 Messaging & Queue Topology
@@ -78,7 +78,6 @@ Separate queues are used for requests, completions, and failures. This prevents 
 
 ```
 
-```markdown
 ### 1. Event Model (`ti-event-model`)
 
 Placed inside a shared library (`ti-event-model`). The `importId` serves as the primary **Correlation ID** across HTTP, RabbitMQ message headers, logs, metrics, and SSE connection tracks.
@@ -118,7 +117,6 @@ Files are written to a configured storage folder outside of the compiled applica
 ti:
   storage:
     path: ./storage/import
-
 ```
 
 #### Implementation (`FileStorageService.java`)
@@ -176,7 +174,6 @@ public class ImportSseController {
         return sseService.create(importId);
     }
 }
-
 ```
 
 #### SSE Service (`SseService.java`)
@@ -211,7 +208,6 @@ public class SseService {
         }
     }
 }
-
 ```
 
 ---
@@ -234,7 +230,6 @@ public class ImportController {
         return new ImportResponse(id, "STARTED");
     }
 }
-
 ```
 
 #### `ImportService.java`
@@ -265,7 +260,6 @@ public class ImportService {
         return id;
     }
 }
-
 ```
 
 ---
@@ -283,7 +277,6 @@ public class RabbitConfig {
         return new Jackson2JsonMessageConverter();
     }
 }
-
 ```
 
 #### Message Publisher (`RabbitPublisher.java`)
@@ -306,7 +299,6 @@ public class RabbitPublisher {
         log.info("Published ImportRequestedEvent {}", event.importId());
     }
 }
-
 ```
 
 ---
@@ -329,7 +321,6 @@ public class ImportRequestedListener {
         workerImportService.process(event);
     }
 }
-
 ```
 
 #### Worker Service (`WorkerImportService.java`)
@@ -375,7 +366,6 @@ public class WorkerImportService {
         }
     }
 }
-
 ```
 
 ---
@@ -477,13 +467,11 @@ sum(rate(ti_import_completed_total[5m]))
 
 ```
 
-
 * **Failure Rate (5m):**
 ```promql
 sum(rate(ti_import_failed_total[5m]))
 
 ```
-
 
 * **95th Percentile Import Latency:**
 ```promql
@@ -491,10 +479,7 @@ histogram_quantile(
   0.95,
   rate(ti_import_duration_seconds_bucket[5m])
 )
-
 ```
-
-
 
 ---
 
@@ -514,7 +499,6 @@ Every structured log output includes tracing metadata:
 
 ```text
 2026-08-20 14:33:00.123 INFO [ti-import-worker,traceId=64a1f33,spanId=b821a3] : Import completed: importId=a13d-98bc, inserted=42
-
 ```
 
 ---
@@ -542,7 +526,6 @@ services:
 
 ```ini
 management.load_definitions = /etc/rabbitmq/definitions.json
-
 ```
 
 ---
@@ -573,9 +556,7 @@ ti-import-worker
             │
             ▼
        UI displays error notification & closes SSE connection
-
 ```
-
 ---
 
 ### 📌 Summary Features
