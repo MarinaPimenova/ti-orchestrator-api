@@ -23,8 +23,6 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
     implementation 'org.springframework.amqp:spring-rabbit-stream'
-
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
@@ -32,22 +30,14 @@ dependencies {
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    // Observability dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     // Metrics
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
-
     // Micrometer Tracing -> OpenTelemetry
     runtimeOnly 'io.micrometer:micrometer-tracing-bridge-otel'
-
-    // Spring Boot OpenTelemetry tracing auto-configuration
-    implementation 'org.springframework.boot:spring-boot-micrometer-tracing-opentelemetry'
-
-    // Spring Boot Zipkin support
-    implementation 'org.springframework.boot:spring-boot-zipkin'
-
     // OpenTelemetry -> Zipkin exporter
     runtimeOnly 'io.opentelemetry:opentelemetry-exporter-zipkin'
-    // Context Propagation for Web Clients / Feign / RestTemplate
-    implementation 'io.micrometer:micrometer-observation'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

@@ -21,7 +21,7 @@ public class ImportService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    @Value("${file.upload.directory:/tmp/imports}")
+    @Value("${ti.import.storage.path}")
     private String storageDirectory;
 
     public ImportResponse upload(MultipartFile file) {

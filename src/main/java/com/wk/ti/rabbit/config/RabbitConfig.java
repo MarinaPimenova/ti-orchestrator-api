@@ -10,11 +10,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
 
-    public static final String EXCHANGE_NAME = "import.exchange";
+    public static final String EXCHANGE_NAME = "ti.import";
+    // queues
     public static final String QUEUE_IMPORT_REQ = "import-worker.import";
-    public static final String QUEUE_IMPORT_COMPLETED = "ti-orchestrator.completed";
+    public static final String QUEUE_IMPORT_COMPLETED = "import-worker.completed";
     public static final String QUEUE_IMPORT_FAIL = "import-worker.fail";
 
+    // routing
     public static final String RK_IMPORT_REQ = "import.requested";
     public static final String RK_IMPORT_COMPLETED = "import.completed";
     public static final String RK_IMPORT_FAILED = "import.failed";
