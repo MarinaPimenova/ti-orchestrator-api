@@ -1,8 +1,8 @@
-package com.wk.ti.upload.service;
+package com.wk.ti.imports.service;
 
-import com.wk.ti.event.ImportEvent;
+import com.wk.ti.imports.event.ImportEvent;
 import com.wk.ti.rabbit.config.RabbitConfig;
-import com.wk.ti.upload.model.ImportResponse;
+import com.wk.ti.imports.model.ImportResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -24,7 +24,7 @@ public class ImportService {
     @Value("${ti.import.storage.path}")
     private String storageDirectory;
 
-    public ImportResponse upload(MultipartFile file) {
+    public ImportResponse bringing(MultipartFile file) {
         String importId = UUID.randomUUID().toString();
         try {
             Path storagePath = Paths.get(storageDirectory);

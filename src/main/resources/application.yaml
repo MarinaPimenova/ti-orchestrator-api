@@ -13,6 +13,12 @@ info:
 spring:
   application:
     name: ${info.app.name}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      resolve-lazily: false
+      enabled: true
   security:
     oauth2:
       resourceserver:
@@ -28,6 +34,10 @@ ti:
   import:
     storage:
       path: ${IMPORT_STORAGE_PATH}
+  upload:
+    storage:
+      path: ${UPLOAD_STORAGE_PATH}
+
 
 group:
   admin: ${ADMINS:admin@example.com}
