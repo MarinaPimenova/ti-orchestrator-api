@@ -95,9 +95,9 @@ Separate queues are used for requests, completions, and failures. This prevents 
 
 | Queue                       | Exchange      | Routing Key          | Producer        | Consumer        |
 |:----------------------------|:--------------|:---------------------|:----------------|:----------------|
-| `document-worker.upload`    | `ti.document` | `document.requested` | Orchestrator    | Document Worker |
-| `document-worker.completed` | `ti.document` | `document.completed` | Document Worker | Orchestrator    |
-| `document-worker.fail`      | `ti.document` | `document.failed`    | Document Worker | Orchestrator    |
+| `upload-worker.upload`    | `ti.document` | `upload.requested` | Orchestrator    | Document Worker |
+| `upload-worker.completed` | `ti.document` | `upload.completed` | Document Worker | Orchestrator    |
+| `upload-worker.fail`      | `ti.document` | `upload.failed`    | Document Worker | Orchestrator    |
 
 > **Note:** The applications do not declare or generate queues dynamically at runtime. Queues, exchanges, and bindings are pre-created via RabbitMQ startup definitions (`definitions.json`).
 

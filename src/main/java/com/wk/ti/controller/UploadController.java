@@ -1,8 +1,8 @@
 package com.wk.ti.controller;
 
+import com.wk.ti.job.model.FileProcessingResponse;
 import com.wk.ti.sse.SseEmitterRegistry;
 import com.wk.ti.upload.UploadService;
-import com.wk.ti.upload.model.UploadResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class UploadController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UploadResponse> upload(@RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(uploadService.upload(file));
+    public ResponseEntity<FileProcessingResponse> upload(@RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(uploadService.process(file));
     }
 }

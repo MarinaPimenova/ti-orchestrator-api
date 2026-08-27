@@ -31,13 +31,16 @@ spring:
     password: ${RABBITMQ_PASS:guest}
 
 ti:
-  import:
-    storage:
-      path: ${IMPORT_STORAGE_PATH}
-  upload:
-    storage:
-      path: ${UPLOAD_STORAGE_PATH}
+  file-processing:
+    import:
+      storage-path: ${TI_IMPORT_STORAGE_PATH:./data/import}
+      exchange: ti.import
+      request-routing-key: import.requested
 
+    upload:
+      storage-path: ${TI_UPLOAD_STORAGE_PATH:./data/upload}
+      exchange: ti.upload
+      request-routing-key: upload.requested
 
 group:
   admin: ${ADMINS:admin@example.com}
@@ -66,8 +69,8 @@ management:
 
 logging:
   level:
-    com.wk.ti: debug
-    org.springframework: info
+    com.wk.ti: info
+    org.springframework: error
   # Enable Native JSON Structured Logging (Spring Boot 3.4+)
   structured:
     format:

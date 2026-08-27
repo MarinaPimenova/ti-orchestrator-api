@@ -1,7 +1,7 @@
 package com.wk.ti.controller;
 
+import com.wk.ti.job.model.FileProcessingResponse;
 import com.wk.ti.sse.SseEmitterRegistry;
-import com.wk.ti.imports.model.ImportResponse;
 import com.wk.ti.imports.service.ImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -24,7 +24,7 @@ public class ImportController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ImportResponse> bringing(@RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(importService.bringing(file));
+    public ResponseEntity<FileProcessingResponse> bringing(@RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(importService.process(file));
     }
 }

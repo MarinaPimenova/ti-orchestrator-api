@@ -1,18 +1,17 @@
 package com.wk.ti.rabbit.config;
 
-import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@SuppressWarnings("removal")
+@SuppressWarnings({"removal", "unused"})
 @Configuration
 public class RabbitConfig {
 
-    public static final String EXCHANGE_NAME = "ti.import";
+    public static final String IMPORT_EXCHANGE_NAME = "ti.import";
     // queues
-    public static final String QUEUE_IMPORT_REQ = "import-worker.import";
+    public static final String QUEUE_IMPORT_REQ = "import-worker.request";
     public static final String QUEUE_IMPORT_COMPLETED = "import-worker.completed";
     public static final String QUEUE_IMPORT_FAIL = "import-worker.fail";
 
@@ -21,9 +20,21 @@ public class RabbitConfig {
     public static final String RK_IMPORT_COMPLETED = "import.completed";
     public static final String RK_IMPORT_FAILED = "import.failed";
 
+    public static final String UPLOAD_EXCHANGE_NAME = "ti.upload";
+    // queues
+    public static final String QUEUE_UPLOAD_REQ = "upload-worker.request";
+    public static final String QUEUE_UPLOAD_COMPLETED = "upload-worker.completed";
+    public static final String QUEUE_UPLOAD_FAIL = "upload-worker.fail";
+
+    // routing
+    public static final String RK_UPLOAD_REQ = "upload.requested";
+    public static final String RK_UPLOAD_COMPLETED = "upload.completed";
+    public static final String RK_UPLOAD_FAILED = "upload.failed";
+/*
+
     @Bean
     public TopicExchange importExchange() {
-        return new TopicExchange(EXCHANGE_NAME, true, false);
+        return new TopicExchange(IMPORT_EXCHANGE_NAME, true, false);
     }
 
     @Bean
@@ -55,6 +66,7 @@ public class RabbitConfig {
     public Binding bindImportFail(Queue importFailQueue, TopicExchange importExchange) {
         return BindingBuilder.bind(importFailQueue).to(importExchange).with(RK_IMPORT_FAILED);
     }
+*/
 
     @Bean
     public MessageConverter jsonMessageConverter() {

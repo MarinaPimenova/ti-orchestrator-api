@@ -1,50 +1,42 @@
 package com.wk.ti.imports.service;
 
-import com.wk.ti.imports.event.ImportEvent;
-import com.wk.ti.rabbit.config.RabbitConfig;
-import com.wk.ti.imports.model.ImportResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.wk.ti.job.AbstractFileProcessingService;
+import com.wk.ti.job.config.FileProcessingProperties;
+import com.wk.ti.job.model.FileProcessingType;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.nio.file.*;
-import java.util.UUID;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
-public class ImportService {
+public class ImportService extends AbstractFileProcessingService {
 
-    private final RabbitTemplate rabbitTemplate;
+    private final FileProcessingProperties properties;
 
-    @Value("${ti.import.storage.path}")
-    private String storageDirectory;
+    public ImportService(
+            RabbitTemplate rabbitTemplate,
+            FileProcessingProperties properties) {
 
-    public ImportResponse bringing(MultipartFile file) {
-        String importId = UUID.randomUUID().toString();
-        try {
-            Path storagePath = Paths.get(storageDirectory);
-            if (!Files.exists(storagePath)) {
-                Files.createDirectories(storagePath);
-            }
+        super(rabbitTemplate);
+        this.properties = properties;
+    }
 
-            String fileName = importId + "_" + file.getOriginalFilename();
-            Path targetPath = storagePath.resolve(fileName);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+    @Override
+    protected String storageDirectory() {
+        return properties.getImportFlow().getStoragePath();
+    }
 
-            log.info("Saved incoming file for importId={} to path={}", importId, targetPath);
+    @Override
+    protected String exchangeName() {
+        return properties.getImportFlow().getExchange();
+    }
 
-            ImportEvent event = new ImportEvent(importId, file.getOriginalFilename(), targetPath.toString());
-            rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_NAME, RabbitConfig.RK_IMPORT_REQ, event);
+    @Override
+    protected String requestRoutingKey() {
+        return properties.getImportFlow().getRequestRoutingKey();
+    }
 
-            return new ImportResponse(importId);
-        } catch (IOException e) {
-            log.error("Failed to store file for import attempt", e);
-            throw new RuntimeException("File storage failure", e);
-        }
+    @Override
+    protected FileProcessingType fileProcessingType() {
+        return FileProcessingType.IMPORT;
     }
 }

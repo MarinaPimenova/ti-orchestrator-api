@@ -1,18 +1,41 @@
 package com.wk.ti.upload;
 
-import com.wk.ti.upload.model.UploadResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.wk.ti.job.AbstractFileProcessingService;
+import com.wk.ti.job.config.FileProcessingProperties;
+import com.wk.ti.job.model.FileProcessingType;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.UUID;
-
-@Slf4j
 @Service
-@RequiredArgsConstructor
-public class UploadService {
-    public UploadResponse upload(MultipartFile file) {
-        return new UploadResponse(UUID.randomUUID().toString());
+public class UploadService extends AbstractFileProcessingService {
+
+    private final FileProcessingProperties properties;
+
+    public UploadService(
+            RabbitTemplate rabbitTemplate,
+            FileProcessingProperties properties) {
+
+        super(rabbitTemplate);
+        this.properties = properties;
+    }
+
+    @Override
+    protected String storageDirectory() {
+        return properties.getUploadFlow().getStoragePath();
+    }
+
+    @Override
+    protected String exchangeName() {
+        return properties.getUploadFlow().getExchange();
+    }
+
+    @Override
+    protected String requestRoutingKey() {
+        return properties.getUploadFlow().getRequestRoutingKey();
+    }
+
+    @Override
+    protected FileProcessingType fileProcessingType() {
+        return FileProcessingType.UPLOAD;
     }
 }
