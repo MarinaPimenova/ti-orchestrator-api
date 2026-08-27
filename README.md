@@ -86,13 +86,21 @@ UI Client ──(1. POST CSV/XLSX)──> Orchestrator (ti-orchestrator-api)
 
 Separate queues are used for requests, completions, and failures. This prevents workers from consuming their own processing completion events and makes queue metrics and monitoring simpler.
 
-| Queue | Exchange | Routing Key | Producer | Consumer |
-| :--- | :--- | :--- | :--- | :--- |
-| `import-worker.import` | `ti.import` | `import.requested` | Orchestrator | Import Worker |
-| `import-worker.completed` | `ti.import` | `import.completed` | Import Worker | Orchestrator |
-| `import-worker.fail` | `ti.import` | `import.failed` | Import Worker | Orchestrator |
+| Queue                     | Exchange    | Routing Key        | Producer      | Consumer      |
+|:--------------------------|:------------|:-------------------|:--------------|:--------------|
+| `import-worker.import`    | `ti.import` | `import.requested` | Orchestrator  | Import Worker |
+| `import-worker.completed` | `ti.import` | `import.completed` | Import Worker | Orchestrator  |
+| `import-worker.fail`      | `ti.import` | `import.failed`    | Import Worker | Orchestrator  |
+
+
+| Queue                       | Exchange      | Routing Key          | Producer        | Consumer        |
+|:----------------------------|:--------------|:---------------------|:----------------|:----------------|
+| `upload-worker.upload`    | `ti.document` | `upload.requested` | Orchestrator    | Document Worker |
+| `upload-worker.completed` | `ti.document` | `upload.completed` | Document Worker | Orchestrator    |
+| `upload-worker.fail`      | `ti.document` | `upload.failed`    | Document Worker | Orchestrator    |
 
 > **Note:** The applications do not declare or generate queues dynamically at runtime. Queues, exchanges, and bindings are pre-created via RabbitMQ startup definitions (`definitions.json`).
+
 
 ---
 #### Metrics Summary

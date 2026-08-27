@@ -2,7 +2,7 @@ package com.wk.ti.controller;
 
 import com.wk.ti.job.model.FileProcessingResponse;
 import com.wk.ti.sse.SseEmitterRegistry;
-import com.wk.ti.imports.service.ImportService;
+import com.wk.ti.upload.UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,20 +11,20 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
-@RequestMapping("/api/v1/import")
+@RequestMapping("/api/v1/upload")
 @RequiredArgsConstructor
-public class ImportController {
+public class UploadController {
 
-    private final ImportService importService;
+    private final UploadService uploadService;
     private final SseEmitterRegistry sseRegistry;
 
-    @GetMapping(value = "/subscribe/{importId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@PathVariable String importId) {
-        return sseRegistry.createEmitter(importId);
+    @GetMapping(value = "/subscribe/{uploadId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(@PathVariable String uploadId) {
+        return sseRegistry.createEmitter(uploadId);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<FileProcessingResponse> bringing(@RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(importService.process(file));
+    public ResponseEntity<FileProcessingResponse> upload(@RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(uploadService.process(file));
     }
 }

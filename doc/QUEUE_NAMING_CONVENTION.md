@@ -1,4 +1,4 @@
-For the TI Knowledge Platform, I would recommend a consistent naming convention:
+For the TI Knowledge Platform, a consistent naming convention:
 
 ```text
 <service>.<workload>[.<purpose>][.<suffix>]
@@ -14,25 +14,22 @@ Where:
 * `.duplicate` — duplicate messages
 * `.retry` — retry queue
 
-### Recommended queues
+### Queues
 
 | Queue                              | Consumer              | Purpose                    |
 | ---------------------------------- | --------------------- | -------------------------- |
-| `ti-import-api.import`             | `ti-import-api`       | Process import requests    |
-| `ti-import-api.import.retry`       | `ti-import-api`       | Retry failed imports       |
-| `ti-import-api.import.fail`        | `ti-import-api`       | Permanently failed imports |
-| `ti-import-api.import.duplicate`   | `ti-import-api`       | Duplicate import requests  |
-| `ti-notification-api.notification` | `ti-notification-api` | Process notifications      |
-| `ti-audit-api.audit`               | `ti-audit-api`        | Process audit events       |
-| `ti-export-api.export`             | `ti-export-api`       | Process export requests    |
+| `ti-import-worker.import`             | `ti-import-worker`       | Process import requests    |
+| `ti-import-worker.import.retry`       | `ti-import-worker`       | Retry failed imports       |
+| `ti-import-worker.import.fail`        | `ti-import-worker`       | Permanently failed imports |
+| `ti-import-worker.import.duplicate`   | `ti-import-worker`       | Duplicate import requests  |
 
-For your current import flow, the core naming would therefore be:
+For current import flow, the core naming would therefore be:
 
 ```text
-ti-import-api.import
-ti-import-api.import.retry
-ti-import-api.import.fail
-ti-import-api.import.duplicate
+ti-import-worker.import
+ti-import-worker.import.retry
+ti-import-worker.import.fail
+ti-import-worker.import.duplicate
 ```
 
 ### Exchanges
@@ -53,7 +50,7 @@ For example:
                     └──────────────┬──────────────┘
                                    │
                                    ▼
-                    ti-import-api.import
+                    ti-import-worker.import
                                    │
                               Import API
                                    │
@@ -62,12 +59,12 @@ For example:
                  success                       failure
                     │                             │
                     ▼                             ▼
-                                      ti-import-api.import.fail
+                                      ti-import-worker.import.fail
 ```
 
-### Recommended event names
+### Event names
 
-I would also standardize event names independently from queue names:
+Standardize event names independently from queue names:
 
 ```text
 ImportRequestedEvent
@@ -85,7 +82,7 @@ Orchestrator
 ti.import
      │
      ▼
-ti-import-api.import
+ti-import-worker.import
      │
      ▼
 Import Service
@@ -99,32 +96,32 @@ ti.import
      └──────────────► Audit Service
 ```
 
-### One recommendation
+### Note
 
-I would **not** put `.dlx` on a queue that is actually a dead-letter queue unless it is genuinely the DLQ. If you're using a **dead-letter exchange**, keep the distinction explicit:
+**not** put `.dlx` on a queue that is actually a dead-letter queue unless it is genuinely the DLQ. If you're using a **dead-letter exchange**, keep the distinction explicit:
 
 ```text
 Exchange:
-ti-import-api.import.dlx
+ti-import-worker.import.dlx
 
 Queue:
-ti-import-api.import.fail
+ti-import-worker.import.fail
 ```
 
 This makes the terminology clear:
 
 ```text
-ti-import-api.import
+ti-import-worker.import
         │
         │ rejected / expired
         ▼
-ti-import-api.import.dlx
+ti-import-worker.import.dlx
         │
         ▼
-ti-import-api.import.fail
+ti-import-worker.import.fail
 ```
 
-For the project, I would adopt this convention globally:
+For the project, adopt this convention globally:
 
 ```text
 <consumer-service>.<workload>
@@ -133,4 +130,4 @@ For the project, I would adopt this convention globally:
 <consumer-service>.<workload>.duplicate
 ```
 
-It gives you an immediate answer to **"which service consumes this queue?"** just by looking at its name.
+It gives an immediate answer to **"which service consumes this queue?"** just by looking at its name.
