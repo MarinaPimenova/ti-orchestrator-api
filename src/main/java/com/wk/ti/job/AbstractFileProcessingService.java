@@ -52,7 +52,7 @@ public abstract class AbstractFileProcessingService {
 
             FileProcessingEvent event = new FileProcessingEvent(
                     jobId,
-                    fileProcessingType(),
+                    fileProcessingType().name(),
                     file.getOriginalFilename(),
                     storedFilePath.toString()
             );
